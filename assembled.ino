@@ -72,6 +72,15 @@ int mask_2 = digitalPinToBitMask(button2);
 int mask_3 = digitalPinToBitMask(button3);
 int mask_4 = digitalPinToBitMask(button4);
 
+int flag_brightness=46;
+int flag_mode=45;
+int toggle_b=0;
+int toggle_m=0;
+int mode=0;
+int brightness=1;
+
+int count_score=0;
+
 //position vectors in LED map
 int pos(int y, int x)
 {
@@ -157,7 +166,7 @@ void setup()
 
   strip.begin();
   strip.show();
-  strip.setBrightness(1);
+  strip.setBrightness(brightness);
   delay(50);
 }
 
@@ -257,8 +266,10 @@ void main_dancing_lights()
       }
     }
     strip.show();
-   if(digitalRead(button2==LOW)){
+   if(digitalRead(button2)==LOW){
+    Serial.println(digitalRead(button2));
      lights_off();
+     delay(1000);
       menu();
    }
   }
@@ -395,6 +406,7 @@ void move_snake()
   if (snake[0][0] == score_point[0] && snake[0][1] == (score_point[1] - 8))
   {
     length++;
+    
     generate_score_point();
   }
 
@@ -465,6 +477,27 @@ void snake_main_process(){
   }
 }
 
+
+void bluetooth(){
+  if(toggle_b!=digitalRead(flag_brightness)){
+    brightness+=10;
+    if(brightness>=255){
+      brightness=1;
+    }
+    strip.setBrightness(brightness);
+    strip.show();
+    toggle_b=digitalRead(flag_brightness);
+  }
+
+  if(toggle_m!=digitalRead(flag_mode)){
+    mode++;
+    if(mode>=5){
+      mode=0;
+    }
+    toggle_m=digitalRead(flag_mode);
+  }
+}
+
 ///main menu
 void menu()
 {
@@ -472,7 +505,7 @@ void menu()
   while(1){
     if(digitalRead(button1)==LOW){
       lights_off();
-    //   bluetooth;
+      bluetooth();
     }
     if(digitalRead(button2)==LOW){
       lights_off();

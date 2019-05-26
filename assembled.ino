@@ -15,6 +15,8 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(256, PIN, NEO_GRB + NEO_KHZ800);
 #define xres 64
 #define yres 8
 
+#define blueToothSerial Serial1
+
 //y values and peaks at different x
 int yvalue;
 int peaks[xres];
@@ -74,11 +76,6 @@ int mask_2 = digitalPinToBitMask(button2);
 int mask_3 = digitalPinToBitMask(button3);
 int mask_4 = digitalPinToBitMask(button4);
 
-//Bluetooth flag to toggle mode and brightness;
-int flag_brightness=46;
-int flag_mode=45;
-int toggle_b=0;
-int toggle_m=0;
 int mode=0;
 int brightness=1;
 
@@ -147,6 +144,12 @@ void game_over()
     delay(500);
     menu();
   }
+  int input=blueToothSerial.read();
+    if (input == 115)
+    {
+      lights_off();
+      menu();
+    }
   }
 }
 
@@ -154,6 +157,7 @@ void game_over()
 void setup()
 {
   Serial.begin(9600);
+  blueToothSerial.begin(115200); //initial the blueToothSerial
   //button pin
   pinMode(button1, INPUT);
   pinMode(button2, INPUT);
@@ -164,14 +168,10 @@ void setup()
   pinMode(button7, INPUT);
   pinMode(button8, INPUT);
 
-  //flag pin
-  pinMode(flag_brightness, INPUT);
-  pinMode(flag_mode,INPUT);
-
-//read noise for random seed
+  //read noise for random seed
   randomSeed(analogRead(1));
 
-    // activate input filters
+  // activate input filters
   REG_PIOA_IFER = mask_1;
   // choose debounce filter as input filter
   REG_PIOA_DIFSR = mask_1;
@@ -191,6 +191,11 @@ void setup()
   attachInterrupt(digitalPinToInterrupt(25), dir_down, FALLING);
   attachInterrupt(digitalPinToInterrupt(26), dir_left, FALLING);
   attachInterrupt(digitalPinToInterrupt(27), dir_right, FALLING);
+
+  //DEFAULT BLE MODE
+  blueToothSerial.write("+++");
+  blueToothSerial.write("AT+SETTING=DEFAULT\r\n");
+  blueToothSerial.write("AT+EXIT\r\n");
 
   //initialize the LED matrix
   strip.begin();
@@ -238,9 +243,9 @@ void main_dancing_lights()
 {
   //sample rate
   sampling_period_us = round(1000000 * (1.0 / SAMPLING_FREQUENCY));      
-  Serial.print("running\n");
   while (1)
   {
+    int input=blueToothSerial.read();
     /*SAMPLING*/
     for (int i = 0; i < SAMPLES; i++)
     {
@@ -354,13 +359,6 @@ void main_dancing_lights()
     }
     }
 
-
-
-
-
-
-
-
     strip.show();
     //if the button is pressed agian return to main menu;
    if(digitalRead(button2)==LOW){
@@ -392,6 +390,46 @@ void main_dancing_lights()
     }
     strip.setBrightness(brightness);
    }
+   //input m
+    if (input == 109)
+    {
+      mode=mode+1;
+      if(mode>=4){
+        mode=0;
+      }
+    }
+    //input M mode-
+    if (input == 77)
+    {
+      mode=mode-1;
+      if(mode<0){
+        mode=3;
+      }
+    }
+    //input b
+    if (input == 98)
+    {
+      brightness=brightness+10;
+      if(brightness>=255){
+        brightness=1;
+      }
+      strip.setBrightness(brightness);
+    }
+    //input B brightness-
+    if (input == 66)
+    {
+      brightness=brightness-50;
+      if(brightness<=0){
+        brightness=255;
+      }
+      strip.setBrightness(brightness);
+    }
+    //input h home
+    if (input == 104)
+    {
+      lights_off();
+      menu();
+    }
   }
 }
 
@@ -646,46 +684,48 @@ void snake_main_process(){
     //move the snake
     move_snake();
     delay(speed);
-  }
+int input=blueToothSerial.read();
+//input 2 up
+if(input==50){
+  up();
+}
+//input 8 down
+if(input==56){
+  down();
+}
+//input 4 left
+if(input==52){
+  left();
+}
+//input  right
+if(input==54){
+  right();
 }
 
-//bluetooth control, controlling the brightness and mode of the dancing lights
-void bluetooth(){
-  //signal for the brightness 
-  //increase by 10 and will not excess 255
-  while(1){
-  if(toggle_b!=digitalRead(flag_brightness)){
-    Serial.println("b recieved");
-    brightness+=10;
-    if(brightness>=255){
-      brightness=1;
+//input h home
+    if (input == 104)
+    {
+      lights_off();
+      menu();
     }
-    strip.setBrightness(brightness);
-    toggle_b=digitalRead(flag_brightness);
-    delay(1000);
-    menu();
-  }
-
-  //signal for the mode
-  //5 modes in total
-  if(toggle_m!=digitalRead(flag_mode)){
-    Serial.println("m recieved");
-    mode++;
-    if(mode>=4){
-      mode=0;
+    //input b
+    if (input == 98)
+    {
+      brightness=brightness+10;
+      if(brightness>=255){
+        brightness=1;
+      }
+      strip.setBrightness(brightness);
     }
-    toggle_m=digitalRead(flag_mode);
-    delay(1000);
-    menu();
-  }
-
-  //button pressed again, return to main menu
-  if(digitalRead(button1)==LOW){
-    delay(1000);
-    menu();
-  }
-
-  delay(500);
+    //input B brightness-
+    if (input == 66)
+    {
+      brightness=brightness-50;
+      if(brightness<=0){
+        brightness=255;
+      }
+      strip.setBrightness(brightness);
+    }
   }
 }
 
@@ -693,27 +733,92 @@ void bluetooth(){
 void menu()
 {
   //display the main menu
+  String input;
   display_menu();
   while(1){
-    //button 1 for bluetooth commands
-    if(digitalRead(button1)==LOW){
-      lights_off();
-      delay(500);
-      bluetooth();
-    }
-
     //button 2 for dancing lights
     if(digitalRead(button2)==LOW){
       lights_off();
-      delay(500);
+      delay(1000);
       main_dancing_lights();
     }
 
     //button 3 for snake game
     if(digitalRead(button3)==LOW){
       lights_off();
-      delay(500);
+      delay(1000);
       snake_main_process();
+    }
+    //button 7 brightness+
+    if (digitalRead(button7)==LOW)
+    {
+      brightness=brightness+10;
+      if(brightness>=255){
+        brightness=1;
+      }
+      strip.setBrightness(brightness);
+    }
+    //button 5 brightness-
+    if (digitalRead(button5)==LOW)
+    {
+      brightness=brightness-50;
+      if(brightness<=0){
+        brightness=255;
+      }
+      strip.setBrightness(brightness);
+    }
+    int input=blueToothSerial.read();
+    //input m mode+
+    if (input == 109)
+    {
+      mode=mode+1;
+      if(mode>=4){
+        mode=0;
+      }
+      lights_off();
+      menu();
+    }
+    //input M mode-
+    if (input == 77)
+    {
+      mode=mode-1;
+      if(mode<0){
+        mode=3;
+      }
+      lights_off();
+      menu();
+    }
+    //input b brightness+
+    if (input == 98)
+    {
+      brightness=brightness+50;
+      if(brightness>=255){
+        brightness=1;
+      }
+      strip.setBrightness(brightness);
+    }
+    //input B brightness-
+    if (input == 66)
+    {
+      brightness=brightness-50;
+      if(brightness<=0){
+        brightness=255;
+      }
+      strip.setBrightness(brightness);
+    }
+    //input s
+    if (input == 115)
+    {
+      lights_off();
+      delay(1000);
+      snake_main_process();
+    }
+    //input d
+    if (input == 100)
+    {
+      lights_off();
+      delay(1000);
+      main_dancing_lights();
     }
   }
 }

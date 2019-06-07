@@ -5,7 +5,7 @@ The size of the LED matrix is 8x32.
 
 Actual connection of circuit:
 
-![image](https://github.com/880n/dancing_lights/blob/master/image/connection.png)
+![image](https://github.com/880n/dancing_lights/blob/master/image/connection.jpg)
 
 
 There are two parts contained in this part: Arduino and Android 
@@ -52,7 +52,7 @@ The control of the snake game is designed using debouncing interrupts, so the ga
 
 Android app:
 
-![image](https://github.com/880n/dancing_lights/blob/master/image/app.png)
+![image](https://github.com/880n/dancing_lights/blob/master/image/app.jpg)
 
 
 In the Android app, we made several buttons sending bytes of commands to the arduino board. The app can do the all the controls as the button set. Additionally, we add the voice recognition to the app. Speak while pressing the voice button will activate it. After releasing it, the words recognized will be shown on the screen. If the specific commands are detected in the words, the commands will be excuted.

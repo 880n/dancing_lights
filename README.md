@@ -11,6 +11,7 @@ There are two ways to control the system: Bluetooth remote and button set.
 Two main functions are designed for the system: Dancing lights and Snake Game.
 
 Main menu:
+
 ![image](https://github.com/880n/dancing_lights/blob/master/image/1.png)
 
 Dancing lights:

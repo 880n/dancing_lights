@@ -10,6 +10,9 @@ There are two ways to control the system: Bluetooth remote and button set.
 
 Two main functions are designed for the system: Dancing lights and Snake Game.
 
+Main menu:
+![image](https://github.com/880n/dancing_lights/blob/master/image/1.png)
+
 Dancing lights:
 
 The dancing lights uses arduinoFFT library to transform the audio signal recieved at analog pin A0 to frequency domain and map the value onto the x domain. Then the peak value of each column will be used to show the pattern according to the mode and brightness.

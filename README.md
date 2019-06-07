@@ -5,7 +5,7 @@ The size of the LED matrix is 8x32.
 
 Actual connection of circuit:
 
-![image](https://github.com/880n/dancing_lights/blob/master/image/connection.jpg)
+![image](https://github.com/880n/dancing_lights/blob/master/image/connection.jpg =250x250)
 
 
 There are two parts contained in this part: Arduino and Android 
